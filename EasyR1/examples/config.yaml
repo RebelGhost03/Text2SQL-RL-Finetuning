@@ -1,0 +1,105 @@
+data:
+  train_files: /workspace/dataset/test.json
+  val_files: /workspace/dataset/tes1.json
+  prompt_key: input_seq
+  answer_key: sql
+  image_key: images
+  video_key: videos
+  image_dir: null
+  video_fps: 2.0
+  max_prompt_length: 2048
+  max_response_length: 2048
+  rollout_batch_size: 64     
+  mini_rollout_batch_size: null
+  val_batch_size: 64          
+  format_prompt: /workspace/EasyR1/examples/format_prompt/text2sql.jinja
+  override_chat_template: null
+  shuffle: true
+  seed: 1308
+  min_pixels: 262144
+  max_pixels: 4194304
+  filter_overlong_prompts: true
+
+algorithm:
+  adv_estimator: grpo
+  disable_kl: false
+  use_kl_loss: true
+  kl_penalty: low_var_kl
+  kl_coef: 0.001                # Changed from 1.0e-2 to 0.001 (β)
+  online_filtering: false
+  filter_key: overall
+  filter_low: 0.01
+  filter_high: 0.99
+
+worker:
+  actor:
+    global_batch_size: 64 
+    micro_batch_size_per_device_for_update: 16
+    micro_batch_size_per_device_for_experience: 16
+    max_grad_norm: 1.0
+    padding_free: true
+    dynamic_batching: true
+    ulysses_size: 1
+    model:
+      model_path: Qwen/Qwen2.5-7B-Instruct
+      enable_gradient_checkpointing: true
+      trust_remote_code: false
+      freeze_vision_tower: false
+    optim:
+      lr: 1.41e-5
+      weight_decay: 1.0e-2
+      strategy: adamw
+      lr_warmup_ratio: 0.05
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: false
+      enable_rank0_init: true
+    offload:
+      offload_params: true
+      offload_optimizer: true
+
+  rollout:
+    n: 2                      
+    temperature: 0.8            
+    top_p: 1.0
+    limit_images: 0
+    gpu_memory_utilization: 0.6
+    enforce_eager: false
+    enable_chunked_prefill: false
+    tensor_parallel_size: 2
+    disable_tqdm: false
+    val_override_config:
+      temperature: 0.6
+      top_p: 0.95
+      n: 1
+
+  ref:
+    fsdp:
+      enable_full_shard: true
+      enable_cpu_offload: true
+      enable_rank0_init: true
+    offload:
+      offload_params: false
+
+  reward:
+    reward_function: /workspace/EasyR1/examples/reward_function/text2sql.py:compute_score
+
+trainer:
+  total_epochs: 1
+  max_steps: null
+  project_name: easy_r1
+  experiment_name: qwen3_coder_30b_a3b_text2sql_grpo
+  logger: ["file"]
+  nnodes: 1
+  n_gpus_per_node: 8
+  max_try_make_batch: 20
+  val_freq: 25
+  val_before_train: true
+  val_only: false
+  val_generations_to_log: 5
+  save_freq: 50
+  save_limit: 2
+  save_model_only: false
+  save_checkpoint_path: /workspace/checkpoint
+  load_checkpoint_path: null
+  find_last_checkpoint: false

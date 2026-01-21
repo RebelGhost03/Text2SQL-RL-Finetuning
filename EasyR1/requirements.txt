@@ -1,6 +1,7 @@
 accelerate
 codetiming
 datasets
+torch
 flash-attn>=2.4.3
 liger-kernel
 mathruler
@@ -18,3 +19,4 @@ torchdata
 transformers>=4.54.0,<=4.57.0
 vllm>=0.8.0
 wandb
+sqlglot

@@ -1,0 +1,237 @@
+{
+  "data": {
+    "train_files": "/workspace/dataset/train_data.json",
+    "val_files": "/workspace/dataset/eval_data.json",
+    "prompt_key": "input_seq",
+    "answer_key": "sql",
+    "image_key": "images",
+    "video_key": "videos",
+    "image_dir": null,
+    "video_fps": 2.0,
+    "max_prompt_length": 2048,
+    "max_response_length": 2048,
+    "rollout_batch_size": 512,
+    "mini_rollout_batch_size": null,
+    "val_batch_size": 512,
+    "format_prompt": "/workspace/EasyR1/examples/format_prompt/text2sql.jinja",
+    "override_chat_template": null,
+    "shuffle": true,
+    "seed": 1308,
+    "min_pixels": 262144,
+    "max_pixels": 4194304,
+    "filter_overlong_prompts": true,
+    "filter_overlong_prompts_workers": 16
+  },
+  "worker": {
+    "hybrid_engine": true,
+    "actor": {
+      "strategy": "fsdp",
+      "global_batch_size": 256,
+      "micro_batch_size_per_device_for_update": 16,
+      "micro_batch_size_per_device_for_experience": 64,
+      "max_grad_norm": 1.0,
+      "clip_ratio_low": 0.2,
+      "clip_ratio_high": 0.2,
+      "clip_ratio_dual": 10.0,
+      "loss_avg_mode": "token",
+      "loss_type": "default",
+      "ppo_epochs": 1,
+      "padding_free": true,
+      "dynamic_batching": true,
+      "ulysses_size": 1,
+      "use_torch_compile": true,
+      "tau_positive": 1.0,
+      "tau_negative": 1.05,
+      "model": {
+        "model_path": "/model",
+        "tokenizer_path": "/model",
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "trust_remote_code": false,
+        "freeze_vision_tower": false
+      },
+      "optim": {
+        "lr": 1.41e-05,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "weight_decay": 0.01,
+        "strategy": "adamw_bf16",
+        "lr_warmup_ratio": 0.05,
+        "lr_warmup_steps": null,
+        "min_lr_ratio": null,
+        "lr_scheduler_type": "constant",
+        "training_steps": 1
+      },
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": false,
+        "enable_rank0_init": true,
+        "use_orig_params": false,
+        "torch_dtype": "bf16",
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": true,
+        "offload_optimizer": true
+      },
+      "global_batch_size_per_device": -1,
+      "disable_kl": false,
+      "use_kl_loss": true,
+      "kl_penalty": "low_var_kl",
+      "kl_coef": 0.001
+    },
+    "critic": {
+      "strategy": "fsdp",
+      "global_batch_size": 256,
+      "micro_batch_size_per_device_for_update": 16,
+      "micro_batch_size_per_device_for_experience": 64,
+      "max_grad_norm": 1.0,
+      "cliprange_value": 0.5,
+      "loss_avg_mode": "token",
+      "ppo_epochs": 1,
+      "padding_free": false,
+      "dynamic_batching": true,
+      "ulysses_size": 1,
+      "model": {
+        "model_path": null,
+        "tokenizer_path": null,
+        "override_config": {},
+        "enable_gradient_checkpointing": true,
+        "trust_remote_code": true,
+        "freeze_vision_tower": false
+      },
+      "optim": {
+        "lr": 1e-06,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "weight_decay": 0.01,
+        "strategy": "adamw",
+        "lr_warmup_ratio": 0.0,
+        "lr_warmup_steps": null,
+        "min_lr_ratio": null,
+        "lr_scheduler_type": "constant",
+        "training_steps": 1
+      },
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": false,
+        "enable_rank0_init": true,
+        "use_orig_params": false,
+        "torch_dtype": null,
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": false,
+        "offload_optimizer": false
+      },
+      "global_batch_size_per_device": -1
+    },
+    "ref": {
+      "strategy": "fsdp",
+      "fsdp": {
+        "enable_full_shard": true,
+        "enable_cpu_offload": true,
+        "enable_rank0_init": true,
+        "use_orig_params": false,
+        "torch_dtype": null,
+        "fsdp_size": -1,
+        "mp_param_dtype": "bf16",
+        "mp_reduce_dtype": "fp32",
+        "mp_buffer_dtype": "fp32"
+      },
+      "offload": {
+        "offload_params": false,
+        "offload_optimizer": false
+      },
+      "micro_batch_size_per_device_for_experience": 16,
+      "padding_free": true,
+      "dynamic_batching": true,
+      "ulysses_size": 1,
+      "use_torch_compile": true
+    },
+    "reward": {
+      "reward_function": "/workspace/EasyR1/examples/reward_function/text2sql.py",
+      "reward_function_kwargs": {},
+      "skip_special_tokens": true,
+      "num_cpus": 1,
+      "reward_function_name": "compute_score"
+    },
+    "rollout": {
+      "name": "vllm",
+      "n": 16,
+      "temperature": 0.8,
+      "top_p": 1.0,
+      "top_k": -1,
+      "seed": 1,
+      "limit_images": 0,
+      "dtype": "bf16",
+      "gpu_memory_utilization": 0.6,
+      "ignore_eos": false,
+      "enforce_eager": false,
+      "enable_chunked_prefill": false,
+      "tensor_parallel_size": 8,
+      "max_model_len": null,
+      "max_num_batched_tokens": 8192,
+      "disable_log_stats": true,
+      "disable_tqdm": false,
+      "val_override_config": {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "n": 1
+      },
+      "prompt_length": 2048,
+      "response_length": 2048,
+      "trust_remote_code": false
+    }
+  },
+  "algorithm": {
+    "gamma": 1.0,
+    "lam": 1.0,
+    "adv_estimator": "grpo",
+    "disable_kl": false,
+    "use_kl_loss": true,
+    "kl_penalty": "low_var_kl",
+    "kl_coef": 0.001,
+    "kl_type": "fixed",
+    "kl_horizon": 10000.0,
+    "kl_target": 0.1,
+    "online_filtering": false,
+    "filter_key": "overall",
+    "filter_low": 0.01,
+    "filter_high": 0.99
+  },
+  "trainer": {
+    "total_epochs": 1,
+    "max_steps": null,
+    "project_name": "easy_r1",
+    "experiment_name": "qwen3_coder_30b_a3b_text2sql_grpo",
+    "logger": [
+      "file"
+    ],
+    "nnodes": 1,
+    "n_gpus_per_node": 8,
+    "max_try_make_batch": 20,
+    "critic_warmup": 0,
+    "val_freq": 25,
+    "val_before_train": true,
+    "val_only": false,
+    "val_generations_to_log": 5,
+    "save_freq": 50,
+    "save_limit": 2,
+    "save_model_only": false,
+    "save_checkpoint_path": "/workspace/checkpoint",
+    "load_checkpoint_path": null,
+    "ray_timeline": null,
+    "find_last_checkpoint": false
+  }
+}

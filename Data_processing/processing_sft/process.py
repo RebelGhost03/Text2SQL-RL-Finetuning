@@ -220,7 +220,7 @@ def convert_path_difficulty(input_filename, output_filename):
            "output": data.get('output_seq')
         }
         
-        sql_difficulty = output_seq.split('```sql\n')[1].split(';\n```')[0]
+        sql_difficulty = calculate_difficulty(output_seq.split('```sql\n')[1].split(';\n```')[0])
         if sql_difficulty == "Simple":
             new_data_s.append(format_data)
         if sql_difficulty != "Challenging":

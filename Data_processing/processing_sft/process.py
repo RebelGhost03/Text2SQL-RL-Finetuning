@@ -240,7 +240,7 @@ def convert_path_difficulty(input_filename, output_filename):
         
 if __name__ == "__main__":
     start_time = time.time()
-    input_file = "train_bird_think.json"
+    input_file = f"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset\\train_data.json"
     output_file = "train_data"
     
     convert_path_difficulty(input_file, output_file)

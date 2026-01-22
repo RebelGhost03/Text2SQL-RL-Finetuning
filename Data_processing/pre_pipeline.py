@@ -194,51 +194,99 @@ def calculate_difficulty(sql: str) -> str:
         return "Moderate"
     else:
         return "Simple"
-    
-def convert_path_difficulty(input_filename, output_filename):
+
+def convert_path_format_parallel(input_filename, input_filename_bird, input_filename_spider, output_filename):
     try:
         with open(input_filename, 'r', encoding='utf-8') as f:
             original_data = json.load(f)
+        with open(input_filename_bird, 'r', encoding='utf-8') as f:
+            bird_data = json.load(f)
+        with open(input_filename_spider, 'r', encoding='utf-8') as f:
+            spider_data = json.load(f)
     except Exception as e:
         print(f"Error reading file: {e}")
         return
 
     print(f"Loaded {len(original_data)} items. Starting parallel processing...")
     
-    new_data_s = []
-    new_data_m = []
-    new_data_c = []
+    new_data = []
     
+    # Gán SQL ground truth, db_path vào data
     for data in original_data:
-        if (calculate_difficulty(data.get('sql').split('<sql>')[1].split('</sql>')[0]) == 'Simple'):
-            new_data_s.append(data)
-        if (calculate_difficulty(data.get('sql').split('<sql>')[1].split('</sql>')[0]) != 'Challenge'):
-            new_data_m.append(data)
-        new_data_c.append(data)
+        input_seq = data.get('input_seq')
+        
+        for bird in bird_data:
+            question = bird.get('question')
+            
+            if question in input_seq:
+                db_id = bird.get('db_id')
+                format_data = {
+                    "input_seq": input_seq,
+                    "sql": bird.get('SQL'),
+                    "db_path": f'./bird-dataset/train_databases/{db_id}/{db_id}.sqlite'
+                }
+                new_data.append(format_data)
+                continue
+            
+        for spider in spider_data:
+            question = spider.get('question')
+            
+            if question in input_seq:
+                db = spider.get('db')
+                format_data = {
+                    "input_seq": input_seq,
+                    "sql": spider.get('query'),
+                    "db_path": f'./spider-dataset/train_databases/{db}/{db}.sqlite'
+                }
+                new_data.append(format_data)
+                continue
+    
+    # Determine workers: usually 2x CPU cores is good for I/O mixed tasks
+    max_workers = min(32, (os.cpu_count() or 1) * 4)
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all tasks
+        futures = {executor.submit(process_single_item, item): item for item in new_data}
+        
+        count = 0
+        total = len(original_data)
+        
+        for future in as_completed(futures):
+            result = future.result()
+            new_data.append(result)
+            
+            count += 1
+            if count % 1000 == 0:
+                print(f"Progress: {count}/{total}...")
+    
+    # Sort or re-order might be needed if original order mattered, 
+    # but for training data usually doesn't matter. 
+    # If order matters, you can store index in submit and sort later.
+
+    out_dir = os.path.dirname(output_filename)
+    if out_dir and not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
     # Use raw string for path or forward slashes to avoid errors
-    save_path_s = os.path.join(r"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset", 'rl_' + output_filename + '_simple.json')
-    save_path_m = os.path.join(r"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset", 'rl_' + output_filename + '_simple_moderate.json')
-    save_path_c = os.path.join(r"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset", 'rl_' + output_filename + '_full.json')
+    save_path = os.path.join(r"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset", output_filename + '.json')
     
-    with open(save_path_s, 'w', encoding='utf-8') as f:
-        json.dump(new_data_s, f, indent=2, ensure_ascii=False)
-    with open(save_path_m, 'w', encoding='utf-8') as f:
-        json.dump(new_data_m, f, indent=2, ensure_ascii=False)
-    with open(save_path_c, 'w', encoding='utf-8') as f:
-        json.dump(new_data_c, f, indent=2, ensure_ascii=False)
+    with open(save_path, 'w', encoding='utf-8') as f:
+        json.dump(new_data, f, indent=2, ensure_ascii=False)
         
+    print(f"Done! Saved to {save_path}")
+    return save_path
+    
 if __name__ == "__main__":
     start_time = time.time()
-    input_file = f"D:\\IT\\FPT\\Project\\2025\\Chatbox\\EasyR1\\Data_processing\\dataset\\train_data.json"
+    input_file = "train_bird_think.json"
     
     # File train gốc từ tập spider, bird, ....
     input_file_bird = 'D:\IT\FPT\Project\\2025\Chatbox\EasyR1\Data_processing\dataset\\bird\\train.json'
     input_file_spider = 'D:\IT\FPT\Project\\2025\Chatbox\EasyR1\Data_processing\dataset\\spider\\train.json'
     output_file = "train_data.json"
     
-    # Chia độ khó
-    convert_path_difficulty(input_file, output_file)
+    # Format data cho phù hợp với huấn luyện GRPO
+    save_path = convert_path_format_parallel(input_file, input_file_bird, input_file_spider, output_file)
     
     end_time = time.time()
     elapsed_time = end_time - start_time

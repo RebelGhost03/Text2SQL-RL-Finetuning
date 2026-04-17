@@ -131,8 +131,17 @@ if __name__ == "__main__":
 
     print("max_model_len:", max_model_len)
     print("temperature:", opt.temperature)
+
     sampling_params = SamplingParams(
-        temperature=opt.temperature, max_tokens=max_output_len, n=opt.n, stop_token_ids=stop_token_ids
+        temperature=opt.temperature, \
+        max_tokens=max_output_len, \
+        top_k = 20, \
+        top_p = 0.95, \
+        n=opt.n, \
+        stop_token_ids=stop_token_ids, \
+        #stop=["</answer>", "<|im_end|>"], \
+        #include_stop_str_in_output=True, \
+        repetition_penalty=1.05,
     )
 
     if opt.parallel_generation:
@@ -151,10 +160,10 @@ if __name__ == "__main__":
             "dtype": "bfloat16",
             "tensor_parallel_size": vllm_tp_size,
             "max_model_len": max_model_len,
-            "gpu_memory_utilization": 0.92,
+            "gpu_memory_utilization": 0.96,
             "swap_space": 42,
-            "enforce_eager": True,
-            "disable_custom_all_reduce": True,
+            "enforce_eager": False, #True
+            "disable_custom_all_reduce": False, #True
             "trust_remote_code": True,
         }
 
@@ -165,10 +174,10 @@ if __name__ == "__main__":
             dtype="bfloat16",
             tensor_parallel_size=opt.tensor_parallel_size,
             max_model_len=max_model_len,
-            gpu_memory_utilization=0.92,
+            gpu_memory_utilization=0.96,
             swap_space=42,
-            enforce_eager=True,
-            disable_custom_all_reduce=True,
+            enforce_eager=False, #True
+            disable_custom_all_reduce=False, #True,
             trust_remote_code=True,
         )
 
@@ -177,17 +186,13 @@ if __name__ == "__main__":
         cot_info = "Let me solve this step by step. \n<think>"
         instruct_info = """
 Please provide a detailed chain-of-thought reasoning process and include your thought process within `<think>` tags. Your final answer should be enclosed within `<answer>` tags.
-
 Ensure that your SQL query follows the correct syntax and is formatted as follows:
-
 ```sql
 -- Your SQL query here
 ```
-
 Example format:
-<think> Step-by-step reasoning, including self-reflection and corrections if necessary. [Limited by 4K tokens] </think>
-<answer> Summary of the thought process leading to the final SQL query. [Limited by 1K tokens]
-
+<think> Step-by-step reasoning, including self-reflection and corrections if necessary. </think>
+<answer>
 ```sql
 Correct SQL query here
 ```

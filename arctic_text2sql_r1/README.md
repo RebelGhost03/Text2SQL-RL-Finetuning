@@ -41,8 +41,8 @@ Here is an example, you should replace with your path
    ```sh
    # Build BM25 index for database values
    python3 data_preprocessing/build_contents_index.py \
-   --db-root /work/BIRD_DIR/dev_20240627/dev_databases \
-   --index-root /work/BIRD_DIR/dev_20240627/db_contents_index \
+   --db-root /BIRD_DIR/dev_20240627/dev_databases \
+   --index-root /BIRD_DIR/dev_20240627/db_contents_index \
    --temp-dir /CREATE_TEMP_DIR \
    --threads 16
    ```
@@ -61,14 +61,14 @@ Here is an example, you should replace with your path
    ```sh
    # Prepare input-output sequences, example here
    bash data_preprocessing/process_dataset.sh \
-    -i /work/BIRD_DIR/dev_20240627/dev.json \
-    -o /work/BIRD_DIR/dev_bird.json \
-    -d /work/BIRD_DIR/dev_20240627/dev_databases/ \
-    -t /work/BIRD_DIR/dev_20240627/dev_tables.json \
+    -i /BIRD_DIR/dev_20240627/dev.json \
+    -o /BIRD_DIR/dev_bird.json \
+    -d /BIRD_DIR/dev_20240627/dev_databases/ \
+    -t /BIRD_DIR/dev_20240627/dev_tables.json \
     -s bird \
     -m dev \
     -v 2 \
-    -c /work/BIRD_DIR/dev_20240627/db_contents_index
+    -c /BIRD_DIR/dev_20240627/db_contents_index
    ```
 
 
@@ -87,9 +87,9 @@ Here is an example of evaluation a model, please replace the input paraments
    ```bash
    python3 bird_eval/eval_open_source_models.py \
    --models Snowflake/Arctic-Text2SQL-R1-7B \
-   --input_file /work/BIRD_DIR/dev_bird.json \
-   --gold_file_path /work/BIRD_DIR/dev_20240627/gold_dev_bird.json \
-   --dp_path /work/BIRD_DIR/dev_20240627/dev_databases \
+   --input_file /BIRD_DIR/dev_bird.json \
+   --gold_file_path /BIRD_DIR/dev_20240627/gold_dev_bird.json \
+   --dp_path /BIRD_DIR/dev_20240627/dev_databases \
    --self_consistency
    ```
 

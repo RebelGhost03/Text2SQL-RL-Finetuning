@@ -62,7 +62,7 @@ def main():
             else:
                 visible_devices = "0,1,2,3,4,5,6,7"
 
-        tensor_parallel_size = len(visible_devices.split(","))
+        tensor_parallel_size = 1#len(visible_devices.split(","))
 
         # set n & temperature
         if args.self_consistency:

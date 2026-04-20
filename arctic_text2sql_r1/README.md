@@ -1,24 +1,14 @@
-# Arctic-R1 Project: Evaluation
-
-<p align="center">
-  <img src="assets/leaderboard_plot_average_styled.png" alt="Six-Benchmark Avg Execution Accuracy vs Model Size" width="800"/>
-</p>
+# Text2SQL BIRD Evaluation
 
 ## Overview
 
-This repository provides a complete demo setup for evaluating **Arctic-Text2SQL-R1** for our [paper](https://arxiv.org/abs/2505.20315).
-
-🚀 Try our released models on Hugging Face:
-- [🤗 Arctic-SQL-R1-7B](https://huggingface.co/Snowflake/Arctic-Text2SQL-R1-7B)
-
-⚠️ Note: We currently only support evaluation. The training code and data generation pipeline are not released at this time.
+This repository provides a complete demo setup for evaluating Large Language Models on Text-to-SQL tasks. It specifically focuses on the BIRD (Benchmark for Instruction-following with Reasoning and Dialogue) benchmark to measure execution accuracy. The evaluation code in this project is derived from the Arctic-Text2SQL-R1 project, designed to support models such as Arctic-SQL-R1-7B and other open-source LLMs
 
 
 ### What's Inside
 - **Data Preparation**: Scripts for generating data used in supervised fine-tuning (SFT) and DPO.
 - **Evaluation**: Instructions for evaluating Arctic-Text2SQL-R1 on Bird benchmarks:
     - **BIRD**: Benchmark for Instruction-following with Reasoning and Dialogue
-
 
 ## Data Preprocess
 
@@ -106,5 +96,6 @@ Here is an example of evaluation a model, please replace the input paraments
 
 ## Acknowledgments
 
-This project incorporates code adapted from [OmniSQL – Synthesizing High-quality Text-to-SQL Data at Scale](https://github.com/RUCKBReasoning/OmniSQL) by RUCKBReasoning.
-Please see their repository for license details and further usage guidelines. This repo builds on code from OmniSQL (Apache 2.0, see link above).
+This project incorporates code adapted from [OmniSQL – Synthesizing High-quality Text-to-SQL Data at Scale](https://github.com/RUCKBReasoning/OmniSQL) by RUCKBReasoning. And utilizes evaluation methodologies derived from the Arctic-Text2SQL-R1 [Arctic-Text2SQL-R1: Simple Rewards, Strong
+Reasoning in Text-to-SQL] (https://github.com/snowflakedb/ArcticTraining) project. We thank the authors for their contributions to the open-source community.
+Please see their repository for license details and further usage guidelines. This repo builds on code from OmniSQL and Arctic-Text2SQL-R1 (Apache 2.0, see link above).

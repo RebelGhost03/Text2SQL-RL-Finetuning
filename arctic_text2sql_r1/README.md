@@ -4,11 +4,32 @@
 
 This repository provides a complete demo setup for evaluating Large Language Models on Text-to-SQL tasks. It specifically focuses on the BIRD (Benchmark for Instruction-following with Reasoning and Dialogue) benchmark to measure execution accuracy. The evaluation code in this project is derived from the Arctic-Text2SQL-R1 project, designed to support models such as Arctic-SQL-R1-7B and other open-source LLMs
 
+Model on Hugging Face: [Ftel-Text2SQL](https://huggingface.co/Phucdh35/Ftel-Text2SQL)
 
 ### What's Inside
 - **Data Preparation**: Scripts for generating data used in the evaluating process.
 - **Evaluation**: Instructions for evaluating Arctic-Text2SQL-R1 on Bird benchmarks:
     - **BIRD**: Benchmark for Instruction-following with Reasoning and Dialogue
+ 
+## Submission Configuration
+
+### System Type
+Single GPU inference using 1 × NVIDIA A100 80GB.
+
+No multi-GPU, no distributed execution, and no external API usage.
+
+Internet access is used only during setup for installing dependencies and downloading Hugging Face model weights. The evaluation phase runs fully offline.
+
+### Runtime Environment
+- CUDA 12.3
+- Python ≥ 3.10
+- Single-process execution on one GPU 
+
+### Hardware Requirements
+- 1 × A100 80GB GPU
+- ≥ 16 CPU cores recommended
+- ≥ 70 GB RAM recommended
+- ≥ 100 GB disk space
 
 ## Important: Configuration Requirements
 

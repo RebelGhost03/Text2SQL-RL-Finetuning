@@ -39,9 +39,49 @@ Before running the scripts, you must update the absolute folder paths within the
 - **run_evaluation.sh**: Update the PROCESSED_INPUT, GOLD_FILE, and DB_PATH variables to match your directory structure.
 
 
-## Data Preprocess
+## Evaluation Process
+
+### Data Preparation
+
+Before running the pipeline, place all test datasets inside the `data/` directory.
+
+Or if you are evaluating the dev datasets: Download the following datasets and extract them into a single directory.
+- **BIRD Benchmark**
+  - [Dev Set](https://bird-bench.oss-cn-beijing.aliyuncs.com/dev.zip)
+
+Make sure the dataset files are organized following the structure below.
+
+Your workspace should be organized in this format:
+
+```bash
+root/
+├── data/
+│   ├── test_databases/
+│   │   ├── california_schools/
+│   │   │   ├── database_description/
+│   │   │   └── california_schools.sqlite
+│   │   ├── ...
+│   │   └── (other databases)
+│   │
+│   │   # Note: the above structure is illustrative.
+│   │   # test_databases are expected to follow the same format
+│   │   # as dev_databases provided in the training/dev set.
+│   │
+│   ├── test_tables.json
+│   ├── test.json
+│   └── column_meaning.json
+│
+├── assets/
+├── bird_eval/
+├── data_preprocessing/
+├── scripts/
+│
+└── README.md
+```
 
 ### Manual Setup (Optional)
+
+#### Data Preprocessing:
 
 1. **Set Up Environment:**
    ```sh
@@ -55,15 +95,7 @@ Before running the scripts, you must update the absolute folder paths within the
    python3 nltk_downloader.py
    ```
 
-2. **Download Datasets:**
-
-Download the following datasets and extract them into a single directory. For the purposes of this tutorial we will assume they are all extracted into `/data/`.
-
-- **BIRD Benchmark**
-  - [Dev Set](https://bird-bench.oss-cn-beijing.aliyuncs.com/dev.zip)
-
-
-3. **Generate Evaluation Input Data**
+2. **Generate Evaluation Input Data**
 
 Here is an example, you should replace with your path
 
@@ -99,20 +131,7 @@ Here is an example, you should replace with your path
     -v 3 \
     -c ./data/BIRD_DIR/dev_20240627/db_contents_index
    ```
-
-### Automated Preprocessing Script
-
-We provide a comprehensive script preprocess_data.sh that automates environment creation, dataset downloading, indexing, and input generation.
-
-Run Preprocessing:
-   ```bash
-   bash ./preprocess_data.sh
-   ```
-
-## Evaluation Process
-
-### Evaluation Reproduction
-You can easily reproduce our evaluation results as follows:
+#### Evaluation Reproduction
 
 1. **Set Up Environment:**
    ```sh
@@ -125,7 +144,7 @@ You can easily reproduce our evaluation results as follows:
 Here is an example of evaluation a model, please replace the input paraments
    ```bash
    python3 bird_eval/eval_open_source_models.py \
-   --models Snowflake/Arctic-Text2SQL-R1-7B \
+   --models {Your Huggingface Model} \
    --input_file ./data/BIRD_DIR/dev_bird.json \
    --gold_file_path ./data/BIRD_DIR/dev_20240627/gold_dev_bird.json \
    --dp_path ./data/BIRD_DIR/dev_20240627/dev_databases \
@@ -134,12 +153,88 @@ Here is an example of evaluation a model, please replace the input paraments
 
 ### Automated Evaluation Script
 
-Use the run_evaluation.sh script to set up the inference environment and execute the evaluation. Change the 
+This project provides three main shell scripts for environment setup and evaluation.
 
-Run Evaluation:
-   ```bash
-   bash ./run_evaluation.sh
-   ```
+1. **setup_py39.py**
+
+This script installs Python 3.9 if it is not already available on the system.
+
+2. **setup.sh**
+
+This script sets up the environment required for running the preprocessing and evaluation pipeline.
+
+It performs the following steps:
+- Creates a Conda environment
+- Installs system dependencies (Java)
+- Installs all required Python packages
+- Downloads required NLTK resources
+
+3. **eval.sh**
+
+This script runs the evaluation pipeline and generates final predictions.
+
+It performs the following steps:
+- Downloads the required model from Hugging Face (if not already cached)
+- Loads the test dataset and database schemas
+- Runs inference on a single GPU
+- Generates SQL predictions for each test question
+- Saves the output to `root/result.json`
+
+This step is fully offline after the model is downloaded.
+
+4. **How to run**
+
+Ensure you are in the root directory of the project (see folder structure in the tree above).
+
+First, if you do not have Python 3.9 installed, run the following script to install it. If it is already installed, you can skip this step:
+
+```bash
+bash scripts/setup_py39.sh
+```
+
+Then, run the setup script to prepare the environment, install dependencies, and verify the folder structure:
+
+```bash
+bash scripts/setup.sh
+```
+
+The setup is successful if the last line of the output is:
+
+```
+Done.
+```
+
+After the setup is completed, run the evaluation script to generate SQL predictions:
+
+```bash
+bash scripts/eval.sh
+```
+
+This step will load the model, run inference on the test set, and save the results to `root/result.json`.
+
+The evaluation is successful if the last line of the output is:
+
+```
+Done.
+```
+
+5. **Result**
+
+The output is saved in root/result.json.
+
+This file has exactly the same structure as test.json, except the SQL field is filled with model predictions.
+
+Example:
+
+```json
+{
+    "db_id": "nba_data",
+    "question": "how many players in NBA?",
+    "evidence": "how many refers to COUNT()",
+    "SQL": "SELECT COUNT(*) FROM players"
+}
+```
+Each entry preserves all original fields to ensure compatibility with the official evaluation pipeline.
 
 ## Acknowledgments
 

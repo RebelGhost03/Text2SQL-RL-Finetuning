@@ -67,6 +67,10 @@ def main():
     parser.add_argument("--parallel_generation", action="store_true", help="Pass --parallel_generation to infer.py")
     opt = parser.parse_args()
 
+    # Check if the gold file is the "tests" file or not
+    gold_filename = os.path.basename(opt.gold_file).lower()
+    skip_eval = "test" in gold_filename
+
     # Build list of checkpoint IDs
     if opt.multiple_models:
         # Expect dirs like ckpt-0, ckpt-1, etc.
@@ -112,15 +116,18 @@ def main():
         else:
             print(f"[{ckpt_id or 'base'}] Skipping greedy (exists)")
 
-        # Evaluate greedy
-        gs_acc, _ = evaluate_bird.run_eval(
-            opt.gold_file, gs_json, opt.db_path, mode="greedy_search", save_pred_sqls=True
-        )
-        greedy_acc[ckpt_id] = gs_acc
+        if not skip_eval:
+            # Evaluate greedy
+            gs_acc, _ = evaluate_bird.run_eval(
+                opt.gold_file, gs_json, opt.db_path, mode="greedy_search", save_pred_sqls=True
+            )
+            greedy_acc[ckpt_id] = gs_acc
 
-        # Save & plot
-        save_json(greedy_acc, os.path.join(eval_dir, "greedy_search.json"))
-        visualize(opt.eval_name, greedy_acc, "greedy_search", eval_dir)
+            # Save & plot
+            save_json(greedy_acc, os.path.join(eval_dir, "greedy_search.json"))
+            visualize(opt.eval_name, greedy_acc, "greedy_search", eval_dir)
+        else:
+            print(f"Skipped evaluation for [{ckpt_id or 'base'}]")
 
         ### Major Voting (only if n>1) ###
         if opt.n > 1:
@@ -142,14 +149,18 @@ def main():
             else:
                 print(f"[{ckpt_id or 'base'}] Skipping major voting (exists)")
 
-            mv_acc, _ = evaluate_bird.run_eval(
-                opt.gold_file, mv_json, opt.db_path, mode="major_voting", save_pred_sqls=True
-            )
-            major_acc[ckpt_id] = mv_acc
+            if not skip_eval:
+                # Self-consistency evaluate
+                mv_acc, _ = evaluate_bird.run_eval(
+                    opt.gold_file, mv_json, opt.db_path, mode="major_voting", save_pred_sqls=True
+                )
+                major_acc[ckpt_id] = mv_acc
 
-            # Save & plot
-            save_json(major_acc, os.path.join(eval_dir, "major_voting.json"))
-            visualize(opt.eval_name, major_acc, "major_voting", eval_dir)
+                # Save & plot
+                save_json(major_acc, os.path.join(eval_dir, "major_voting.json"))
+                visualize(opt.eval_name, major_acc, "major_voting", eval_dir)
+            else:
+                print(f"Skipped evaluation for [{ckpt_id or 'base'}]")
 
     print("✅ Done.")
 
